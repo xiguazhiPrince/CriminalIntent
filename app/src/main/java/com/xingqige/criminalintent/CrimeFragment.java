@@ -29,6 +29,8 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
 
+    private View mCrimeFragmentView;
+
     private static final String ARG_CRIME_ID = "crime_id";
 
     public static CrimeFragment newInstance(UUID crimeId) {
@@ -57,9 +59,9 @@ public class CrimeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View inflate = inflater.inflate(R.layout.fragment_crime, container, false);
+        mCrimeFragmentView = inflater.inflate(R.layout.fragment_crime, container, false);
 
-        mTitleField = (EditText)inflate.findViewById(R.id.crime_title);
+        mTitleField = (EditText)mCrimeFragmentView.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
             @Override
@@ -78,10 +80,10 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        mDateButton = (Button) inflate.findViewById(R.id.crime_date);
+        mDateButton = (Button) mCrimeFragmentView.findViewById(R.id.crime_date);
         mDateButton.setText(mCrime.getDate().toString());
         mDateButton.setEnabled(false);
-        mSolvedCheckBox = (CheckBox)inflate.findViewById(R.id.crime_solved);
+        mSolvedCheckBox = (CheckBox)mCrimeFragmentView.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
@@ -91,6 +93,6 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        return inflate;
+        return mCrimeFragmentView;
     }
 }
