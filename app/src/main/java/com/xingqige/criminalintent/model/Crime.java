@@ -11,6 +11,20 @@ public class Crime {
 
     private int type;
 
+    /**
+     * 联系人姓名
+     */
+    private String mSuspect;
+
+
+    public String getSuspect() {
+        return mSuspect;
+    }
+
+    public void setSuspect(String mSuspect) {
+        this.mSuspect = mSuspect;
+    }
+
     public int getType() {
         return type;
     }
