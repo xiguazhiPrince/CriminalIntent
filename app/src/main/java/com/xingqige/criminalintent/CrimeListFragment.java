@@ -16,13 +16,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xingqige.criminalintent.lab.CrimeLab;
 import com.xingqige.criminalintent.model.Crime;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
@@ -34,6 +37,8 @@ public class CrimeListFragment extends Fragment {
 
     private boolean mSubtitleVisible;
 
+    private View view;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,19 +48,45 @@ public class CrimeListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_crime_list, container, false);
+        view = inflater.inflate(R.layout.fragment_crime_list, container, false);
 
-        mCrimeRecyclerView = (RecyclerView)view.findViewById(R.id.crime_recycler_view);
-        mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        handleRecyclerView();
 
-        updateUI();
         return view ;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateUI();
+
+        handleRecyclerView();
+    }
+
+    private void handleRecyclerView() {
+        List<Crime> crimes = CrimeLab.get(getActivity()).getCrimes();
+        if (crimes == null || crimes.isEmpty()) {
+            LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.crime_linear);
+            linearLayout.setVisibility(View.VISIBLE);
+            mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
+            mCrimeRecyclerView.setVisibility(View.GONE);
+
+            ImageButton imageButton = (ImageButton) view.findViewById(R.id.crime_linear_imageButton);
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Crime crime = new Crime();
+                    CrimeLab.get(getActivity()).addCrime(crime);
+                    Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getmId());
+                    startActivity(intent);
+                }
+            });
+
+        } else {
+            mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
+            mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+            updateUI();
+        }
     }
 
     @Override
@@ -182,6 +213,10 @@ public class CrimeListFragment extends Fragment {
         public int getItemCount() {
             return mCrimes.size();
         }
+
+        public void setCrimes(List<Crime> crimes){
+            mCrimes = crimes;
+        }
     }
 
     private void updateUI() {
@@ -192,9 +227,9 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter);
         }else {
+            mAdapter.setCrimes(crimes);
             mAdapter.notifyDataSetChanged();
         }
-
         updateSubtitle();
     }
 
