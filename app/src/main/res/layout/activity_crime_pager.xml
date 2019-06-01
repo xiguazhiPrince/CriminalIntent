@@ -11,22 +11,21 @@
         android:id="@+id/btn_to_first"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="276dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="60dp"
         android:text="跳到第一页"
-        app:layout_constraintStart_toStartOf="@+id/activity_crime_pager_view_pager"
-        app:layout_constraintTop_toTopOf="@+id/activity_crime_pager_view_pager" />
+        app:layout_constraintBottom_toBottomOf="@+id/activity_crime_pager_view_pager"
+        app:layout_constraintStart_toStartOf="@+id/activity_crime_pager_view_pager" />
 
     <Button
         android:id="@+id/btn_to_last"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginTop="276dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="60dp"
         android:text="跳到最后一页"
-        app:layout_constraintEnd_toEndOf="@+id/activity_crime_pager_view_pager"
-        app:layout_constraintTop_toTopOf="@+id/activity_crime_pager_view_pager" />
+        app:layout_constraintBottom_toBottomOf="@+id/activity_crime_pager_view_pager"
+        app:layout_constraintEnd_toEndOf="@+id/activity_crime_pager_view_pager" />
 
     <android.support.v4.view.ViewPager
         android:layout_width="match_parent"

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.xingqige.criminalintent.model.Crime;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -70,6 +71,11 @@ public class CrimeLab {
 
     }
 
+    public File getPhotoFile(Crime crime) {
+        File filesDir = mContext.getFilesDir();
+        return new File(filesDir, crime.getPhotoFilename());
+    }
+
     public void addCrime(Crime c){
         ContentValues values = getContentValues(c);
         mDatabase.insert(CrimeDbSchema.CrimeTable.NAME, null, values);
@@ -111,7 +117,7 @@ public class CrimeLab {
         values.put(CrimeDbSchema.CrimeTable.Cols.TITLE, crime.getTitle());
         values.put(CrimeDbSchema.CrimeTable.Cols.DATE, crime.getDate().getTime());
         values.put(CrimeDbSchema.CrimeTable.Cols.SOLVED, crime.isSolved() ? 1 : 0);
-        values.put(CrimeDbSchema.CrimeTable.Cols.SUSPECT, "");
+        values.put(CrimeDbSchema.CrimeTable.Cols.SUSPECT, crime.getSuspect());
 
         return values;
     }
