@@ -1,5 +1,6 @@
 package com.xingqige.criminalintent;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +26,8 @@ import android.widget.Toast;
 
 import com.xingqige.criminalintent.lab.CrimeLab;
 import com.xingqige.criminalintent.model.Crime;
+import com.xingqige.criminalintent.utils.CrimeItemTouchHelper;
+import com.xingqige.criminalintent.utils.CrimeItemTouchHelperCallBack;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +42,24 @@ public class CrimeListFragment extends Fragment {
     private boolean mSubtitleVisible;
 
     private View view;
+
+    private Callbacks mCallbacks;
+
+    public interface Callbacks{
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks)context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,6 +109,7 @@ public class CrimeListFragment extends Fragment {
 
             updateUI();
         }
+
     }
 
     @Override
@@ -109,8 +132,11 @@ public class CrimeListFragment extends Fragment {
             case R.id.new_crime:
                 Crime crime = new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime);
-                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getmId());
-                startActivity(intent);
+//                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getmId());
+//                startActivity(intent);
+                updateUI();
+                mCallbacks.onCrimeSelected(crime);
+
                 return true;
             case R.id.show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
@@ -170,9 +196,10 @@ public class CrimeListFragment extends Fragment {
 //
 //            startActivityForResult(intent, REQUEST_CRIME);
 
-            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getmId());
+//            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getmId());
+//            startActivity(intent);
 
-            startActivity(intent);
+            mCallbacks.onCrimeSelected(mCrime);
         }
     }
 
@@ -184,7 +211,7 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
-    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder>{
+    public class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> implements CrimeItemTouchHelper {
 
         private List<Crime> mCrimes;
         public CrimeAdapter(List<Crime> crimes) {
@@ -217,9 +244,23 @@ public class CrimeListFragment extends Fragment {
         public void setCrimes(List<Crime> crimes){
             mCrimes = crimes;
         }
+
+        @Override
+        public void onItemMove(int fromPosition, int toPosition) {
+            // 移动
+        }
+
+        @Override
+        public void onItemDissmiss(int position) {
+            // 删除
+            Crime crime = mCrimes.get(position);
+            CrimeLab.get(getActivity()).removeCrime(crime.getmId());
+            notifyItemRemoved(position);
+            updateUI();
+        }
     }
 
-    private void updateUI() {
+    public void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
@@ -231,6 +272,14 @@ public class CrimeListFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
         }
         updateSubtitle();
+
+        //先实例化Callback
+        ItemTouchHelper.Callback callback = new CrimeItemTouchHelperCallBack(mAdapter);
+        //用Callback构造ItemtouchHelper
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        //调用ItemTouchHelper的attachToRecyclerView方法建立联系
+        touchHelper.attachToRecyclerView(mCrimeRecyclerView);
+
     }
 
 }

@@ -3,6 +3,7 @@ package com.xingqige.criminalintent;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -87,6 +88,24 @@ public class CrimeFragment extends Fragment {
     private String mSuspectId;
     private String mSuspectPhone;
 
+    private Callbacks mCallbacks;
+
+    public interface Callbacks{
+        void onCrimeUpdated(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks)context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
@@ -137,6 +156,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -166,6 +186,7 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                updateCrime();
             }
         });
 
@@ -266,6 +287,7 @@ public class CrimeFragment extends Fragment {
         if (requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
+            updateCrime();
             updateDate();
         }
 
@@ -295,6 +317,7 @@ public class CrimeFragment extends Fragment {
                 int hasNumber = c.getInt(1);
                 mSuspectId = c.getString(2);
                 mCrime.setSuspect(mSuspect);
+                updateCrime();
                 mSuspectButton.setText(mSuspect);
 
                 //判断用户是否已经授权给我们了 如果没有，调用下面方法向用户申请授权，之后系统就会弹出一个权限申请的对话框
@@ -312,9 +335,15 @@ public class CrimeFragment extends Fragment {
             Log.d("REQUEST_PHOTO", "234");
             Uri uri = FileProvider.getUriForFile(getActivity(), "com.xingqige.criminalintent.fileprovider", mPhotoFile);
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            updateCrime();
             updatePhotoView();
         }
 
+    }
+
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 
     private void getPhone(String mSuspectId, int hasNumber) {
@@ -359,7 +388,6 @@ public class CrimeFragment extends Fragment {
 
         String dateFormat = "EEE, MMM dd";
         String dateString = (String)DateFormat.format(dateFormat, mCrime.getDate());
-
         String suspect = mCrime.getSuspect();
         if (suspect == null) {
             suspect = getString(R.string.crime_report_no_suspect);
